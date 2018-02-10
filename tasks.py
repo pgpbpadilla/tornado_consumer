@@ -17,5 +17,7 @@ def up(ctx):
 @task(pre=[up])
 def publish(ctx):
     """Boot up all containers and start publishing messages to RabbitMQ."""
-    ctx.run('python publisher/rmq_publisher.py')
+    print('Waiting for containers to be ready')
+    ctx.run('sleep 30', echo=True);
+    ctx.run('python publisher/rmq_publisher.py', echo=True)
 

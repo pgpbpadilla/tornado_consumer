@@ -6,6 +6,7 @@
 
 # Quick start
 
+- `pip install -r requirements.txt`
 - `inv -l` - List available tasks
 - `inv -h <taskname>` - Help for specific task 
 
