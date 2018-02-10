@@ -28,7 +28,11 @@ def start_publishing(uri, exchange):
     '''declare exchange and start publishing messages'''
     connection = pika.BlockingConnection(pika.URLParameters(uri))
     channel = connection.channel()
-    channel.exchange_declare(exchange=exchange, exchange_type='fanout', auto_delete=True)
+    channel.exchange_declare(
+        exchange=exchange,
+        exchange_type='fanout',
+        auto_delete=True
+    )
     fake = Faker()
 
     while True:
@@ -37,7 +41,9 @@ def start_publishing(uri, exchange):
             routing_key = generate_routing_key()
             channel.basic_publish(
                 exchange, routing_key, json.dumps(doc),
-                pika.BasicProperties(content_type='application/json', delivery_mode=pika.spec.TRANSIENT_DELIVERY_MODE)
+                pika.BasicProperties(
+                    content_type='application/json',
+                    delivery_mode=pika.spec.TRANSIENT_DELIVERY_MODE)
             )
             time.sleep(0.01)
         except KeyboardInterrupt:

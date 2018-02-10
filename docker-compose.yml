@@ -3,3 +3,5 @@ services:
   rabbitmq:
     image: rabbitmq
     hostname: mq
+    ports:
+      - 5672:5672
