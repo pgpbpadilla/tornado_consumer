@@ -22,7 +22,7 @@ def generate_routing_key():
 
 
 @click.command()
-@click.option('--uri', default='amqp://guest:guest@localhost:5672/%2F', help='RabbitMQ URI')
+@click.option('--uri', default='amqp://guest:guest@rabbitmq:5672/%2F', help='RabbitMQ URI')
 @click.option('--exchange', default='test-exchange', help='RabbitMQ exchange to publish to')
 def start_publishing(uri, exchange):
     '''declare exchange and start publishing messages'''

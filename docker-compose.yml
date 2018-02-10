@@ -16,3 +16,9 @@ services:
     build: .
     image: consumer
     command: sh -c '/app/wait-for.sh rabbitmq:5672 -- python consumer.py'
+  publisher:
+    depends_on:
+      - consumer
+    build: .
+    image: publisher
+    command: sh -c '/app/wait-for.sh rabbitmq:5672 -- python rmq_publisher.py'
