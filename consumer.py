@@ -246,7 +246,7 @@ class ExampleConsumer(object):
                     method.delivery_tag, properties.app_id, body)
 
         self.acknowledge_message(method.delivery_tag)
-        client = motor.motor_tornado.MotorClient('localhost', 27017)
+        client = motor.motor_tornado.MotorClient('mongo', 27017)
         db = client.local
 
         def my_callback(result, error):
@@ -349,7 +349,7 @@ class ExampleConsumer(object):
 
 def main():
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-    example = ExampleConsumer('amqp://guest:guest@localhost:5672/%2F')
+    example = ExampleConsumer('amqp://guest:guest@rabbitmq:5672/%2F')
     try:
         example.run()
     except KeyboardInterrupt:

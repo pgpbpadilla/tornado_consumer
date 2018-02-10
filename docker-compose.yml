@@ -9,3 +9,10 @@ services:
     image: mongo
     ports:
       - 27017:27017
+  consumer:
+    depends_on:
+      - rabbitmq
+      - mongo
+    build: .
+    image: consumer
+    command: sh -c '/app/wait-for.sh rabbitmq:5672 -- python consumer.py'

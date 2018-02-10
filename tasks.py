@@ -8,6 +8,7 @@ def down(ctx):
 
 @task
 def up(ctx):
+    ctx.run('docker-compose build')
     ctx.run('docker-compose up -d', echo=True)
 
 
