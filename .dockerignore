@@ -1,1 +1,8 @@
 .ve
+publisher
+docker-compose.yml
+Dockerfile
+*.iml
+README.md
+tasks.py
+
