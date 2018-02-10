@@ -1,5 +1,10 @@
 from invoke import task
-import consumer
+
+
+@task
+def down(ctx):
+    ctx.run('docker-compose down', echo=True)
+
 
 @task
 def up(ctx):
