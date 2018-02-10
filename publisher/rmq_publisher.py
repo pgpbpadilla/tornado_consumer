@@ -39,6 +39,7 @@ def start_publishing(uri, exchange):
         try:
             doc = dict(ip=fake.ipv4(), path=fake.uri_path())
             routing_key = generate_routing_key()
+            print(('Routing to:', routing_key))
             channel.basic_publish(
                 exchange, routing_key, json.dumps(doc),
                 pika.BasicProperties(

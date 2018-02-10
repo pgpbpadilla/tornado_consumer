@@ -1,6 +1,7 @@
 from pika import adapters
 import pika
 import logging
+import json, motor
 
 LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
@@ -23,7 +24,7 @@ class ExampleConsumer(object):
     EXCHANGE = 'test-exchange'
     EXCHANGE_TYPE = 'fanout'
     QUEUE = 'messages'
-    ROUTING_KEY = 'example.text'
+    ROUTING_KEYS = ['coll{:02d}'.format(k) for k in xrange(10)]
 
     def __init__(self, amqp_url):
         """Create a new instance of the consumer class, passing in the AMQP
@@ -186,10 +187,15 @@ class ExampleConsumer(object):
         :param pika.frame.Method method_frame: The Queue.DeclareOk frame
 
         """
-        LOGGER.info('Binding %s to %s with %s',
-                    self.EXCHANGE, self.QUEUE, self.ROUTING_KEY)
-        self._channel.queue_bind(self.on_bindok, self.QUEUE,
-                                 self.EXCHANGE, self.ROUTING_KEY)
+        for routing_key in self.ROUTING_KEYS:
+            LOGGER.info('Binding %s to %s with %s',
+                        self.EXCHANGE, self.QUEUE, routing_key)
+            self._channel.queue_bind(
+                self.on_bindok,
+                self.QUEUE,
+                self.EXCHANGE,
+                routing_key
+            )
 
     def add_on_cancel_callback(self):
         """Add a callback that will be invoked if RabbitMQ cancels the consumer
@@ -222,7 +228,7 @@ class ExampleConsumer(object):
         LOGGER.info('Acknowledging message %s', delivery_tag)
         self._channel.basic_ack(delivery_tag)
 
-    def on_message(self, unused_channel, basic_deliver, properties, body):
+    def on_message(self, channel, method, properties, body):
         """Invoked by pika when a message is delivered from RabbitMQ. The
         channel is passed for your convenience. The basic_deliver object that
         is passed in carries the exchange, routing key, delivery tag and
@@ -230,15 +236,26 @@ class ExampleConsumer(object):
         instance of BasicProperties with the message properties and the body
         is the message that was sent.
 
-        :param pika.channel.Channel unused_channel: The channel object
+        :param pika.channel.Channel channel: The channel object
         :param pika.Spec.Basic.Deliver: basic_deliver method
         :param pika.Spec.BasicProperties: properties
         :param str|unicode body: The message body
 
         """
         LOGGER.info('Received message # %s from %s: %s',
-                    basic_deliver.delivery_tag, properties.app_id, body)
-        self.acknowledge_message(basic_deliver.delivery_tag)
+                    method.delivery_tag, properties.app_id, body)
+
+        self.acknowledge_message(method.delivery_tag)
+        client = motor.motor_tornado.MotorClient('localhost', 27017)
+        db = client.local
+
+        def my_callback(result, error):
+            LOGGER.info('result %s', repr(result.inserted_id))
+
+        document = json.loads(body)
+        collection_name, doc_id = method.routing_key.split('.')
+        document.update(dict(_id=doc_id))
+        db[collection_name].insert_one(document, callback=my_callback)
 
     def on_cancelok(self, unused_frame):
         """This method is invoked by pika when RabbitMQ acknowledges the
